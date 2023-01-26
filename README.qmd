@@ -90,7 +90,16 @@ Once you are done setting up the project, you can now start working on the lab.
 Write a function using the ellipsis argument (`...`) with the goal of (i) retrieving the list of arguments passed to it, (ii) printing information about them using `str()`, and (iii) printing the environment where they belong and the address of the object in memory using `data.table::address()`.
 
 ```{r}
+sispille <- function(...){
+  goal <- list(...)
+  lapply(goal, str)
+  lapply(goal, \(x) {
+    print(data.table::address(x))
+    })
+  invisible()
+}
 
+sispille(123, pi)
 ```
 
 Knit the document, commit your changes, and push them to GitHub.
