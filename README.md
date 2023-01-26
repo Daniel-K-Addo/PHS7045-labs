@@ -117,8 +117,8 @@ sispille(123, pi)
 
      num 123
      num 3.14
-    [1] "00000000085609c8"
-    [1] "000000000a13f080"
+    [1] "0000000008561368"
+    [1] "000000000a13dfb8"
 
 Knit the document, commit your changes, and push them to GitHub.
 
@@ -133,6 +133,7 @@ and then call the function passing the following arguments
 fun <- function(a, b){
   print(a)
 }
+
 fun(1, this_stuff)
 ```
 
