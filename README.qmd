@@ -1,8 +1,6 @@
 ---
 title: "Lab 03 - Functions and data.table"
-format:
-  html:
-    embed-resources: true
+format: gfm
 ---
 
 # Learning goals
@@ -110,7 +108,11 @@ Knit the document, commit your changes, and push them to GitHub.
 A concept we did not review was lazy evaluation. Write a function with two arguments (`a` and `b`)  that only uses one of them as an integer, and then call the function passing the following arguments `(1, this_stuff)`
 
 ```{r}
+fun <- function(a, b){
+  print(a)
+}
 
+fun(1, this_stuff)
 ```
 
 Knit the document, commit your changes, and push them to GitHub.
