@@ -4,13 +4,11 @@ author: "Daniel Addo"
 date: "`r Sys.Date()`"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-library(dplyr)
 ```
 
 # Design 1
@@ -20,7 +18,7 @@ design_one <- function(N_samp = 228, # Total number of participants
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
                        alpha = 0.35,  beta = 0.65, # prior
                        n_post = 1000, # number of posterior draws
-                       seed_setting = 8, # set seed for replication
+                       seed_setting = 4832, # set seed for replication
                        allocation_size = 40 # Initial Sample to allocate
                        ){
   set.seed(seed_setting)
@@ -51,8 +49,14 @@ design_one <- function(N_samp = 228, # Total number of participants
   return(output)
 }
 
-design_one(N_samp, trt_n, trt_effect,
-           alpha, beta, n_post, seed_setting)
+design_one(N_samp = 228, # Total number of participants
+           trt_n = 4, # Number of Arms
+           trt_effect = rep(0.35,4), # treatment effect for each arm 
+           alpha = 0.35,  beta = 0.65, # prior
+           n_post = 1000, # number of posterior draws
+           seed_setting = 4832, # set seed for replication
+           allocation_size = 40 # Initial Sample to allocate
+           )
 
 
 ```
@@ -65,7 +69,7 @@ design_two <- function(N_samp = 228, # Total number of participants
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
                        alpha = 0.35,  beta = 0.65, # prior
                        n_post = 1000, # number of posterior draws
-                       seed_setting = 8, # set seed for replication
+                       seed_setting = 4832, # set seed for replication
                        allocation_size = 40 # Initial Sample to allocate
                        ){
   set.seed(seed_setting) # Set seed
@@ -136,7 +140,7 @@ design_two(N_samp = 228, # Total number of participants
            trt_effect = rep(0.35,4), # treatment effect for each arm 
            alpha = 0.35,  beta = 0.65, # prior
            n_post = 1000, # number of posterior draws
-           seed_setting = 9, # set seed for replication
+           seed_setting = 4832, # set seed for replication
            allocation_size = 40 # Initial Sample to allocate
            )
 ```
