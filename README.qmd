@@ -123,7 +123,13 @@ Knit the document, commit your changes, and push them to GitHub.
 Write a function that fits a linear regression model and saves the result to the global environment using the `assign()` function. The name of the output must be passed as a symbol using lazy evaluation.
 
 ```{r}
+fitRegModel <- function(x,y){
+  assign("fitLinear", y~x, envir = .GlobalEnv)
+}
 
+x <- 1:100
+y <- rnorm(100,10,10)
+fitRegModel(x,y)
 ```
 
 Knit the document, commit your changes, and push them to GitHub.
@@ -140,6 +146,7 @@ Knit the document, commit your changes, and push them to GitHub.
 ```{r}
 #| label: stations-data
 #| eval: false
+library(data.table)
 
 # Download the data
 stations <- fread("ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-history.csv")

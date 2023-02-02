@@ -117,8 +117,8 @@ sispille(123, pi)
 
      num 123
      num 3.14
-    [1] "0000000008561368"
-    [1] "000000000a13dfb8"
+    [1] "0000000009942258"
+    [1] "000000000b50ca98"
 
 Knit the document, commit your changes, and push them to GitHub.
 
@@ -147,6 +147,16 @@ Write a function that fits a linear regression model and saves the
 result to the global environment using the `assign()` function. The name
 of the output must be passed as a symbol using lazy evaluation.
 
+``` r
+fitRegModel <- function(x,y){
+  assign("fitLinear", y~x, envir = .GlobalEnv)
+}
+
+x <- 1:100
+y <- rnorm(100,10,10)
+fitRegModel(x,y)
+```
+
 Knit the document, commit your changes, and push them to GitHub.
 
 # Part 3: Data.table
@@ -162,6 +172,8 @@ Knit the document, commit your changes, and push them to GitHub.
     during the lecture to pre-process the stations’ data:
 
 ``` r
+library(data.table)
+
 # Download the data
 stations <- fread("ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-history.csv")
 stations[, USAF := as.integer(USAF)]
