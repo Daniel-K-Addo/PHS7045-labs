@@ -1,6 +1,7 @@
 ---
 title: "Lab 2"
-output: gfm
+format: html
+editor: visual
 ---
 
 ```{r setup, include=FALSE}
