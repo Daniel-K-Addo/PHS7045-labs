@@ -1,17 +1,9 @@
----
-title: "Lab 2"
-format: gfm
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-library(dplyr)
-```
+Lab 2
+================
 
 # Design 1
 
-```{r}
+``` r
 design_one <- function(N_samp = 228, # Total number of participants
                        trt_n = 4, # Number of Arms
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
@@ -58,9 +50,19 @@ design_one(N_samp = 228, # Total number of participants
            )
 ```
 
+    [[1]]
+    [1] The best treatment arm with probability of being better than control is treatment 3 with probability 0.46
+
+    [[2]]
+         Treatment Size
+    [1,]         0   57
+    [2,]         1   57
+    [3,]         2   57
+    [4,]         3   57
+
 # Design 2 (With the option of Design 1)
 
-```{r}
+``` r
 design_two <- function(N_samp = 228, # Total number of participants
                        trt_n = 4, # Number of Arms
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
@@ -151,3 +153,13 @@ design_two(N_samp = 228, # Total number of participants
            design_option = 2 # Design option
            )
 ```
+
+    [[1]]
+    [1] The best treatment arm with probability of being better than control is treatment 1 with probability 0.44
+
+    [[2]]
+         Treatment Size
+    [1,]         0   81
+    [2,]         1   49
+    [3,]         2   38
+    [4,]         3   60
