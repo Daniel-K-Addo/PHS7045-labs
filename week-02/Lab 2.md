@@ -29,8 +29,11 @@ design_one <- function(N_samp = 228, # Total number of participants
   # Compare treatments with control and select best treatment
   treatmentComparison(trt_n,post_y,n_samp,design_option)
 }
+```
 
-# Test 
+# Testing the ‘design_one’ function
+
+``` r
 design_one(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
@@ -113,8 +116,11 @@ design_two <- function(N_samp = 228, # Total number of participants
   treatmentComparison(trt_n,post_y,n_samp,design_option)
   
 }
+```
 
-# Test Example
+# Testing the ‘design_two’ function
+
+``` r
 design_two(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
