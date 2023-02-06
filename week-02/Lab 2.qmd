@@ -6,60 +6,51 @@ format: gfm
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library(dplyr)
+source("treatmentComparison.R") # Function: Compare treatment means with ctrl
+source("allocationUpdate.R") # Function: Update allocation probs
 ```
 
 # Design 1
-
 ```{r}
 design_one <- function(N_samp = 228, # Total number of participants
                        trt_n = 4, # Number of Arms
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
                        alpha = 0.35,  beta = 0.65, # prior
                        n_post = 1000, # number of posterior draws
-                       seed_setting = 4832, # set seed for replication
-                       allocation_size = 40 # Initial Sample to allocate
+                       seed_setting = 4832 # set seed for replication
                        ){
   set.seed(seed_setting)
-  n_samp <- N_samp/trt_n
+  # Equal allocation sample size determination
+  design_option <- 1 # Specifying design option as needed later
+  n_samp <- rep(N_samp/trt_n, trt_n)
   Y <- NULL
   post_y <- NULL
   for(i in 1:trt_n){
     # Definition of outcome given treatment effect within each arm
-    Y[[i]] <- rbinom(n_samp,1,trt_effect[i])
+    Y[[i]] <- rbinom(n_samp[i],1,trt_effect[i])
     # Posterior draws
     post_y[[i]] <- rbeta(n_post, 
                          alpha + sum(Y[[i]]), 
-                         beta + n_samp - sum(Y[[i]])
+                         beta + n_samp[i] - sum(Y[[i]])
                          )
   }
-  # Compare treatments with control and select best
-  comparison_means <- sapply(2:(trt_n), function(x) mean(post_y[[x]]>post_y[[1]]))
-  max_trt<-which.max(comparison_means)
-  max_trt_prob <- comparison_means[max_trt]
-  output <- NULL
-  output[[1]] <- noquote(paste("The best treatment arm with probability of",
-                      "being better than control is treatment",
-                       max_trt, "with probability",
-                       round(max_trt_prob,2)
-                       ))
-  output[[2]] <- cbind(Treatment = 0:(trt_n-1),
-                       Size = rep(n_samp,trt_n))
-  return(output)
+  # Compare treatments with control and select best treatment
+  treatmentComparison(trt_n,post_y,n_samp,design_option)
 }
 
+# Test 
 design_one(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
            alpha = 0.35,  beta = 0.65, # prior
            n_post = 1000, # number of posterior draws
-           seed_setting = 4832, # set seed for replication
-           allocation_size = 40 # Initial Sample to allocate
+           seed_setting = 4832 # set seed for replication
            )
+
+
 ```
 
 # Design 2 (With the option of Design 1)
-
 ```{r}
 design_two <- function(N_samp = 228, # Total number of participants
                        trt_n = 4, # Number of Arms
@@ -75,8 +66,7 @@ design_two <- function(N_samp = 228, # Total number of participants
   allocation_size <- ifelse(design_option==1, N_samp, allocation_size)
   # Compute # of interim allocation steps needed
   interim_steps <- ceiling(N_samp/allocation_size) 
-  n_samp <- NULL
-  Y <- NULL
+  Y <- NULL # Output storage
   for(j in 1:interim_steps){
     post_y <- NULL
     post_y_all <- NULL
@@ -86,7 +76,7 @@ design_two <- function(N_samp = 228, # Total number of participants
       n_allocate <- round(allocation_prob*allocation_size)
       n_allocate[trt_n] <- allocation_size - sum(n_allocate[-trt_n])
       n_samp <- n_allocate
-    }else if(j!=interim_steps){ # Allocate according to allocation probs across treatments
+    }else if(j!=interim_steps){ # Allocate wrt allocation probs across treatments
       allocation_prob <- V_t_norm
       n_allocate <- round(allocation_prob*allocation_size)
       n_allocate[trt_n] <- allocation_size - sum(n_allocate[-trt_n])
@@ -104,43 +94,23 @@ design_two <- function(N_samp = 228, # Total number of participants
     }else{
       Y[[i]] <- c(Y[[i]],rbinom(n_allocate[i],1,trt_effect[i]))
     }
-    # Posterior draws
+    # Posterior draws from a beta distribution
     post_y[[i]] <- rbeta(n_post, 
                          alpha + sum(Y[[i]]), 
                          beta + n_samp[i] - sum(Y[[i]])
                          )
     post_y_all <- cbind(post_y_all,post_y[[i]])
   }
-  pt_max0 <- apply(post_y_all, 1, which.max) 
-  pt_max <- c(mean(pt_max0==1),
-              mean(pt_max0==2),
-              mean(pt_max0==3),
-              mean(pt_max0==4)
-              )
-  
-  # Update allocation probability
-  V_0 <- min(sum(pt_max[-1] * (n_samp[-1]+1)/(n_samp[1]+1)),
-             max(pt_max[-1]))
-  V_t <- c(V_0, pt_max[-1])
-  V_t_norm <- V_t/sum(V_t) # Normalize to get allocation probabilities
+  # Update allocation probability after posterior draws
+  V_t_norm <- allocationUpdate(post_y_all, n_samp)
   }
   
+  # Compare treatments with control and select best treatment
+  treatmentComparison(trt_n,post_y,n_samp,design_option)
   
-  # Compare treatments with control and select best
-  comparison_means <- sapply(2:(trt_n), function(x) mean(post_y[[x]]>post_y[[1]]))
-  max_trt<-which.max(comparison_means)
-  max_trt_prob <- comparison_means[max_trt]
-  output <- NULL
-  output[[1]] <- noquote(paste("The best treatment arm with probability of",
-                      "being better than control is treatment",
-                       max_trt, "with probability",
-                       round(max_trt_prob,2)
-                       ))
-  output[[2]] <- cbind(Treatment = 0:(trt_n-1),
-                       Size = n_samp)
-  return(output)
 }
 
+# Test Example
 design_two(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
