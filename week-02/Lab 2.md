@@ -1,6 +1,13 @@
 Lab 2
 ================
 
+``` r
+source("lab2RelatedFunctions.R")
+# allocationUpdate() Function: Compare treatment means with ctrl
+# outcomeDefinition() Function: Update allocation probs
+# treatmentComparison() Function: Update allocation probs
+```
+
 # Design 1
 
 ``` r
@@ -8,10 +15,8 @@ design_one <- function(N_samp = 228, # Total number of participants
                        trt_n = 4, # Number of Arms
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
                        alpha = 0.35,  beta = 0.65, # prior
-                       n_post = 1000, # number of posterior draws
-                       seed_setting = 4832 # set seed for replication
+                       n_post = 1000 # number of posterior draws
                        ){
-  set.seed(seed_setting)
   # Equal allocation sample size determination
   design_option <- 1 # Specifying design option as needed later
   n_samp <- rep(N_samp/trt_n, trt_n)
@@ -34,12 +39,12 @@ design_one <- function(N_samp = 228, # Total number of participants
 # Testing the ‘design_one’ function
 
 ``` r
+set.seed(4832)
 design_one(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
            alpha = 0.35,  beta = 0.65, # prior
-           n_post = 1000, # number of posterior draws
-           seed_setting = 4832 # set seed for replication
+           n_post = 1000 # number of posterior draws # set seed for replication
            )
 ```
 
@@ -64,16 +69,16 @@ design_two <- function(N_samp = 228, # Total number of participants
                        trt_effect = rep(0.35,4), # treatment effect for each arm 
                        alpha = 0.35,  beta = 0.65, # prior
                        n_post = 1000, # number of posterior draws
-                       seed_setting = 4832, # set seed for replication
                        allocation_size = 40, # Initial Sample to allocate
                        design_option = 2 # Design option 
                        ){
-  set.seed(seed_setting) # Set seed
   # Condition to revert to design one:
   allocation_size <- ifelse(design_option==1, N_samp, allocation_size)
   # Compute # of interim allocation steps needed
   interim_steps <- ceiling(N_samp/allocation_size) 
   Y <- NULL # Output storage
+  V_t_norm <- rep(1,trt_n)/trt_n
+  
   for(j in 1:interim_steps){
     post_y <- NULL
     post_y_all <- NULL
@@ -94,22 +99,21 @@ design_two <- function(N_samp = 228, # Total number of participants
       n_allocate[trt_n] <- (N_samp %% allocation_size) - sum(n_allocate[-trt_n])
       n_samp <-n_allocate+n_samp
     } 
-  for(i in 1:trt_n){
-    # Definition of outcome given treatment effect within each arm
-    if(j==1){
-      Y[[i]] <- rbinom(n_allocate[i],1,trt_effect[i])
-    }else{
-      Y[[i]] <- c(Y[[i]],rbinom(n_allocate[i],1,trt_effect[i]))
+    
+    for(i in 1:trt_n){
+      # Definition of outcome given treatment effect within each arm
+      Y[[i]] <- outcomeDefinition(i,j,Y,n_allocate,trt_effect)
+      
+      # Posterior draws from a beta distribution
+      post_y[[i]] <- rbeta(n_post,
+                           alpha + sum(Y[[i]]),
+                           beta + n_samp[i] - sum(Y[[i]])
+                           )
+      post_y_all <- cbind(post_y_all,post_y[[i]])
     }
-    # Posterior draws from a beta distribution
-    post_y[[i]] <- rbeta(n_post, 
-                         alpha + sum(Y[[i]]), 
-                         beta + n_samp[i] - sum(Y[[i]])
-                         )
-    post_y_all <- cbind(post_y_all,post_y[[i]])
-  }
-  # Update allocation probability after posterior draws
-  V_t_norm <- allocationUpdate(post_y_all, n_samp)
+    
+    # Update allocation probability after posterior draws
+    V_t_norm <- allocationUpdate(post_y_all, n_samp)
   }
   
   # Compare treatments with control and select best treatment
@@ -121,26 +125,26 @@ design_two <- function(N_samp = 228, # Total number of participants
 # Testing the ‘design_two’ function
 
 ``` r
+set.seed(4832)
 design_two(N_samp = 228, # Total number of participants
            trt_n = 4, # Number of Arms
            trt_effect = rep(0.35,4), # treatment effect for each arm 
            alpha = 0.35,  beta = 0.65, # prior
            n_post = 1000, # number of posterior draws
-           seed_setting = 1030, # set seed for replication
            allocation_size = 40, # Initial Sample to allocate
            design_option = 2 # Design option
            )
 ```
 
     [[1]]
-    [1] The best treatment arm with probability of being better than control is treatment 1 with probability 0.44
+    [1] The best treatment arm with probability of being better than control is treatment 1 with probability 0.88
 
     [[2]]
          Treatment Size
-    [1,]         0   81
-    [2,]         1   49
-    [3,]         2   38
-    [4,]         3   60
+    [1,]         0   76
+    [2,]         1   48
+    [3,]         2   53
+    [4,]         3   51
 
     [[3]]
     [1] "Trial was NOT successful"
