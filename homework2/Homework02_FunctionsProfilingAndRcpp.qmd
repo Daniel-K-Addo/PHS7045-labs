@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Homework 2"
 format: gfm
 ---
 
@@ -19,8 +19,8 @@ fun1 <- function(n = 100, k = 4, lambda = 4) {
 }
 
 fun1alt <- function(n = 100, k = 4, lambda = 4) {
-  x <- sapply(1:n, \(x) rpois(k,lambda))
-  return(x)
+  # Draw randomly from a Poisson(lambda) n*k times
+  rpois(n*k, lambda) |> matrix(nrow = 100, byrow = TRUE)
 }
 
 # Benchmarking
@@ -61,8 +61,7 @@ fun2 <- function(mat) {
 }
 
 fun2alt <- function(mat) {
-  n <- nrow(mat)
-  x <- sapply(1:n, \(x) cumsum(mat[x,])) |> t()
+  apply(dat,1,cumsum) |> t()
 }
 
 # Use the data with this code
@@ -95,7 +94,13 @@ fun2 <- function(x) {
 }
 
 fun2alt <- function(x) {
-  sapply(1:ncol(x), \(k) max(x[,k]))
+  colMax <- max.col(t(x))
+  n <- ncol(x)
+  out <-  rep(NA, n)
+  for(i in 1:n){
+    out[i] <- x[colMax[i],i]
+  }
+  out
 }
 
 # Benchmarking
@@ -108,31 +113,71 @@ bench::mark(
 ## Part 2: Rcpp code
 As we saw in the Rcpp week, vectorization may not be the best solution. For this part, you must write a function using Rcpp that implements the propensity score matching algorithm. You can use Week 5’s lab as a starting point for the problem. Your C++ file should look something like the following:
 
-```{r}
-#include<Rcpp.h>
+```{Rcpp}
+#include <Rcpp.h>
 
-# using namespace Rcpp;
-# 
-# List psmatch(
-#   NumericVector pscores,
-#   LogicalVector is_treated
-# )
-# {
-#   /*... setup the problem creating the output...*/
-# 
-#   /*
-#   ... Implement your matching (start from Week 5's lab)... 
-#   ... You have to consider that matches are done againts groups, i.e.,
-#       Treated (is_treated == true) must be matched to control 
-#       (is_treated == false)  
-#   */
-# 
-#   // Returning
-#   return List::create(
-#     _["match_id"] = /*...*/
-#     _["match_pscore"] = /*...*/,
-#   );
-# 
-# }
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+ List psmatch(
+   NumericVector pscores,
+   LogicalVector is_treated
+ )
+ {
+  /*... setup the problem creating the output...*/
+  int n = static_cast<int>(is_treated.size());
+  IntegerVector indices(n); 
+  NumericVector values(n); 
+
+  /*
+  ... Implement your matching (start from Week 5's lab)...
+  ... You have to consider that matches are done againts groups, i.e.,
+      Treated (is_treated == true) must be matched to control
+      (is_treated == false)
+  */
+  for (int i = 0; i < n; ++i) {
+    // For each treated person, we want to find a matching control
+    if (is_treated[i] == true) {
+      
+      int best_n = 0;
+      double best_diff = std::numeric_limits < double >::max();
+      
+      for (int j = 0; j < n; ++j) {
+      // controls being matched be ith treated subject to identify optimal match
+      if (is_treated[j] == false) {
+        
+      // If it is lower, then update
+      double diff = std::abs(pscores[i] - pscores[j]);
+      if (diff < best_diff) {
+        
+        best_n = j;
+        best_diff = diff;
+        }
+      }
+      }
+
+      values[i] = pscores[best_n]; // noting the matched prop score
+      indices[i] = best_n + 1; // noting the matched control index, adjusted for R
+    
+}
+    }
+
+  // Returning
+  return List::create(
+    _["match_id"] = indices,
+    _["match_pscore"] = values 
+  );
+
+ }
+```
+
+# Example
+```{r}
+set.seed(324)
+x <- runif(25) # pscore
+y <- rbinom(25,1,0.4) |> as.logical() # is_treated
+ans <- psmatch(x,y)
+
+cbind.data.frame(pscores=x,is_treated=y,ans$match_id, ans$match_pscore)
 ```
 
