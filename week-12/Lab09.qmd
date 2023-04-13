@@ -1,0 +1,21 @@
+---
+title: "Lab 9"
+format: gfm
+---
+
+# Task 1
+## Alternatives to job arrays
+R MPI
+
+# Task 2
+## Your expert opinion
+*At the core level, using SIMD instructions.*
+SIMD stands for single instruction, multiple data is a useful tool for parallel computing. Primarily, at the core level, the same task is done on multiple data points at the same time.
+Usage: 
+Use: Audio/video processing in multimedia applications.
+
+*At the CPU level using multiple cores within a program (e.g., loop-level).*
+
+*Same, but replicating the job within a node.*
+
+*At the node level, replicating the job across nodes.*
