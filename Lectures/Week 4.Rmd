@@ -1,0 +1,44 @@
+---
+title: "Lecture 4"
+author: "Daniel Addo"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+urnFunc <- function(u1b=10, u1y=8, u2b=6, u2y=6, n_rep=100000){
+  pick2 <- NULL
+  Urn1 <- c(rep("blue",u1b), rep("yellow",u1b))
+  Urn2 <- c(rep("blue",u2y), rep("yellow",u2y))
+  for(i in 1:n_rep){
+    pick1 <- sample(Urn1,1)
+    Urn2b <- cbind(Urn2, pick1) 
+    pick2[i] <- sample(Urn2b,1)
+  }
+  answer <- prop.table(table(pick2))
+  return(answer[1])
+}
+tictoc::tic()
+urnFunc(u1b=10, u1y=8, u2b=6, u2y=6, n_rep=100000)
+tictoc::toc()
+```
+```{r}
+nreps <- 10e4
+simjc <- function(nreps,b1,y1,b2,y2){
+  
+  u1 <- b1 + y1  
+  u2plus1 <- b2 + y2 + 1
+  transfer <- rbinom(nreps,1,prob = b1 / u1)
+  mean(rbinom(nreps,1,prob = (b2 + transfer) / u2plus1))
+  
+}
+tictoc::tic()
+urnFunc(1e5,10,8,6,6)
+tictoc::toc()
+```
+
